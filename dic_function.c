@@ -16,13 +16,12 @@
 long hash_index(char* string, int p, long m);
 
 Item* insert_item(char* key, char* value);
-void update_item(Item* item_p, char* value);
+void update_item(char* item_p_value, char* value);
 
 // when load factor above threshold, increase the size
 void upsize(Dictionary d);
 // when load factor below threshold, decrease the size
 void downsize(Dictionary d);
-
 
 
 Dictionary create(long size){
@@ -54,15 +53,25 @@ Dictionary create(long size){
 }
 
 
+// destroy the dictionary, free everything
 Dictionary destroy(Dictionary d){
     // need to free from the most inside structure
     for (long i = 0; i < d->size; i++){
         if (*(d->bucket_array+i) != NULL){
+
             free((*(d->bucket_array+i))->key);
-            free((*(d->bucket_array+i))->value);
+            (*(d->bucket_array+i))->key = NULL;
+
+            if ((*(d->bucket_array+i))->value != NULL){
+                free((*(d->bucket_array+i))->value);
+                (*(d->bucket_array+i))->value = NULL;
+            }
+            
             free(*(d->bucket_array+i));
+            *(d->bucket_array+i) = NULL;
         }
     }
+
     free(d->bucket_array);
     d->bucket_array = NULL;
     
@@ -86,21 +95,24 @@ void insert(Dictionary d, char* key, char* value){
     // do the hash first
     long key_hash = hash_index(key, P, M);
     key_hash %= d->size; // d->size causes the segmentation fault
-    
-    // if the position is allocated already, check the key is same or not
-    // if the key is the same, then update "value"
-    // if not, either: find the next empty slot, or find the same key
 
-    // if it is null, simply exist
-    // if it is not null, check if key is the same, if same, exist
-    // if the key not same, then roll to find either an empty position or a same key
+    /*if the position is null: simply insert
+      if the position is not null, check if the key is same
+        if key is same, update the value
+        if not same, find along the collision chain
+            if find null, then insert
+            if not null and find the same key, simply update
+    
+    so i separate into two parts: 
+    first determine the location, then update/insert */
+
     if (*(d->bucket_array + key_hash) != NULL){
         if (strcmp((*(d->bucket_array + key_hash))->key, key) != 0){
             while (true){
                 key_hash++;
                 key_hash %= d->size;
                 if(*(d->bucket_array + key_hash) == NULL 
-                    || strcmp((*(d->bucket_array + key_hash))->value, value) == 0){
+                    || strcmp((*(d->bucket_array + key_hash))->key, key) == 0){
                     break;
                 }
             }
@@ -116,21 +128,15 @@ void insert(Dictionary d, char* key, char* value){
         d->count++;
     }
     else{
-        // same key, need to update the value
-        if (strcmp((*(d->bucket_array + key_hash))->value, value) != 0){
-            // update the item
-            update_item(*(d->bucket_array + key_hash), value);
-        }  
+        update_item((*(d->bucket_array + key_hash))->value, value);
     }
 
     return;
 }
 
 
-/* need to fix the delete: 
-if one item is removed, it may be on the collision chain
-so that it may break the chain. need to modify the delete
-probably simply make the value as null*/
+// modify the delete function, even you delete, the key is still there
+// and the value is set to null. So that the collision chain is not broken
 void delete(Dictionary d, char* key){
     // if the key is not there, then do nothing
     // if the key is there, find it and then null this bucket
@@ -160,14 +166,12 @@ void delete(Dictionary d, char* key){
             return;
         }
         else{
-            free((*(d->bucket_array+key_hash))->key);
-            (*(d->bucket_array+key_hash))->key = NULL;
-
+            /*do not free the key, only free the value
+              so that the collision chain is not broken
+              so in the item structure, char* key still exist
+              only char* value is freeed*/
             free((*(d->bucket_array+key_hash))->value);
             (*(d->bucket_array+key_hash))->value = NULL;
-
-            free(*(d->bucket_array+key_hash));
-            *(d->bucket_array + key_hash) = NULL; 
         }
     }
     
@@ -188,18 +192,16 @@ void delete(Dictionary d, char* key){
 }
 
 
+// need to modify the search function to suit the delete
+// when you find the key, need to check if the value is null or not
+// return null if not find, else just return the value
 char* search(const Dictionary d, char*key){
-
-    char* error_msg;
-    error_msg = (char*) malloc (50*sizeof(char));
-    sprintf(error_msg, "Error: no key [%s]\n", key);
 
     long key_hash = hash_index(key, P, M);
     key_hash %= d->size;
 
-
     if (*(d->bucket_array+key_hash) == NULL){
-        return error_msg;
+        return NULL;
     }
     else{
         if (strcmp( (*(d->bucket_array+key_hash))->key, key) == 0){
@@ -214,14 +216,20 @@ char* search(const Dictionary d, char*key){
                 key_hash++;
                 key_hash %= d->size;
                 if (*(d->bucket_array+key_hash) == NULL){
-                    return error_msg;
+                    return NULL;
                 }
                 else if (strcmp( (*(d->bucket_array+key_hash))->key, key) == 0){
-                    // better to copy the values, in case for further use
-                    char* ret_value;
-                    ret_value = (char*) malloc(strlen((*(d->bucket_array+key_hash))->value)*sizeof(char));
-                    strcpy(ret_value, (*(d->bucket_array+key_hash))->value);
-                    return ret_value;
+                    // find the same key, check if the value is null
+                    if ((*(d->bucket_array+key_hash))->value == NULL){
+                        return NULL;
+                    }
+                    else{
+                        // better to copy the values, in case for further use
+                        char* ret_value;
+                        ret_value = (char*) malloc(strlen((*(d->bucket_array+key_hash))->value)*sizeof(char));
+                        strcpy(ret_value, (*(d->bucket_array+key_hash))->value);
+                        return ret_value;
+                    }
                 }
             }
         }
@@ -232,30 +240,32 @@ char* search(const Dictionary d, char*key){
 // return some status information 
 void status(const Dictionary d){
 
-    printf("Dictionary status:\n");
     printf("Size = %ld   Item number = %ld   ",
             d->size, d->count);
     
     if (d->count != 0){
         printf("Load factor = %.0f%%", (float)(d->count) / (float)d->size * 100.0);
     }
-    printf("\n\n");
+    printf("\n");
     return;
 }
 
 
-// this function prints out all the keys 
+// this function prints out all the key-value pair
+// need to skip those deleted items (check if value is null)
 void view_pairs(const Dictionary d){
 
-    printf("Dictionary key-value pairs:\n");
+    printf("\nDictionary key-value pairs:\n");
 
     for (int i = 0; i < d->size; i++){
-        if (*(d->bucket_array + i) != NULL){
+        if (*(d->bucket_array + i) != NULL 
+                && (*(d->bucket_array+i))->value != NULL){
             printf("[%s] -> [%s]\n", 
                 (*(d->bucket_array+i))->key, (*(d->bucket_array+i))->value);
         }
     }
-    
+
+    printf("\n");
     return;
 }
 
@@ -281,7 +291,7 @@ long hash_index(char* string, int p, long m){
 void upsize(Dictionary d){
 
     printf("Dictionary upsizing...\n");
-    printf("Original status:");
+    printf("Original status: ");
     status(d);
 
     Dictionary dnew;
@@ -314,21 +324,27 @@ void upsize(Dictionary d){
     *d = *dnew;
     free(dnew);
 
-    printf("New status:\n");
+    printf("New status: ");
     status(d);
+    printf("\n");
     return;
 }
 
 
-// downsize function: called in the "delete" function
-// the downsize function reduces to max(d->size / 2, START_SIZE)
+/* downsize function: called in the "delete" function
+   the downsize function reduces to max(d->size / 2, START_SIZE)
+   modify to suit the new "delete"
+   during downsizing, collision chain removes those deleted node
+   but make sure the chain is still linked */
 void downsize(Dictionary d){
 
     printf("Dictionary downsizing...\n");
-    printf("Original status:");
+    printf("Original status: ");
     status(d);
 
     Dictionary dnew;
+
+    // the size is chosen with max(current/2, START_SIZE)
     if ((d->size / 2) > START_SIZE){
         dnew = create((long) (d->size / 2));
     }
@@ -340,8 +356,11 @@ void downsize(Dictionary d){
 
     //now need to copy all values to here
     // scan through d, find a key-value, then re-calculate the hash and allocate
+    // if value is null, omit
     for (long i = 0; i < d->size; i++){
-        if (*(d->bucket_array + i) != NULL){
+        if (*(d->bucket_array + i) != NULL 
+                && (*(d->bucket_array+i))->value != NULL){
+            
             long key_hash = hash_index(
                 (*(d->bucket_array+i))->key, P, M
             );
@@ -364,9 +383,9 @@ void downsize(Dictionary d){
     *d = *dnew;
     free(dnew);
 
-    printf("New status:\n");
+    printf("New status: ");
     status(d);
-
+    printf("\n");
     return;
 }
 
@@ -401,16 +420,20 @@ Item* insert_item(char* key, char* value){
 
 
 // update item
-void update_item(Item* item_p, char* value){
-    item_p = realloc(
-        item_p, strlen(value)*sizeof(char)
-    );
+void update_item(char* item_p_value, char* value){
+    // need to check if the item value is null or not
+    if (item_p_value == NULL){
+        item_p_value = (char*)malloc(strlen(value)*sizeof(char));
+    }
+    else{
+        item_p_value = realloc(item_p_value, strlen(value)*sizeof(char));
+    }
 
-    if (item_p->value == NULL){
-        printf("Memory allocation fail: insert\n");
+    if (item_p_value == NULL){
+        printf("Memory allocation fail: update item\n");
         exit(EXIT_FAILURE);
     }
 
-    strcpy(item_p->value, value);
+    strcpy(item_p_value, value);
     return;
 }

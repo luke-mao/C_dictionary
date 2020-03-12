@@ -8,7 +8,6 @@ int main(void){
     Dictionary d;
     d = create(START_SIZE);
     status(d);
-    printf("\n");
 
     FILE* fp;
     fp = fopen("dic_test_upsize.txt", "r");
@@ -54,25 +53,38 @@ int main(void){
     //////////////////////////////////////////////////////////////
 
     printf("Command: Check some deleted key and not-existing key\n\n");
-    printf("key = [a], [aaa], [able], [abuse], [xx], [night], [bad], [work]");
-    printf("%s", search(d, "a"));
-    printf("%s", search(d, "aaa"));
-    printf("%s", search(d, "able"));
-    printf("%s", search(d, "abuse"));
-    printf("%s", search(d, "xx"));
-    printf("%s", search(d, "night"));
-    printf("%s", search(d, "bad"));
-    printf("%s", search(d, "work"));
-
+    printf("key = [a], [aaa], [able], [abuse], [xx], [night], [bad], [work]\n");
+    char *test_key[] = {"a", "aaa", "able", "abuse","xx", "night", "bad", "work"};
+    int test_key_length = 8;
+    for (int i = 0; i < test_key_length; i++){
+        char* result = search(d, test_key[i]);
+        if (result == NULL){
+            printf("Error: no key match [%s]\n", test_key[i]);
+        }
+        else{
+            printf("[%s]->[%s]\n", test_key[i], result);
+        }
+    }
     //////////////////////////////////////////////////////////////
 
-    printf("\nCommand: Check some existing key-value pairs\n\n");
+    printf("\nCommand: Check some existing key-value pairs\n");
     printf("[agencies]->[agency], [aging]->[ago], [aid]->[aids], [aims]->[air]\n");
     printf("check return %s\n", search(d, "agencies"));
     printf("check return %s\n", search(d, "aging"));
     printf("check return %s\n", search(d, "aid"));
     printf("check return %s\n", search(d, "aims"));
+    //////////////////////////////////////////////////////////////
 
+    printf("\nCommand: Consider [aging]->[ago], repeatedly insert different values\n");
+    printf("Command: insert[aging]->[hello], [gello], [yogurt], [tuna], [happy]\n");
+    printf("Then check the value of key [aging]\n");
+    insert(d, "aging", "hello");
+    insert(d, "aging", "gello");
+    insert(d, "aging", "yogurt");
+    insert(d, "aging", "tuna");
+    insert(d, "aging", "happy");
+    printf("check return %s\n", search(d, "aging"));
+    //////////////////////////////////////////////////////////////
 
     printf(("\nFinish test, deleting...\nThank you.\n"));
     destroy(d);

@@ -23,7 +23,7 @@ Dictionary create(long size);
 Dictionary destroy(Dictionary d);
 void insert(Dictionary d, char* key, char* value); // no update, simply: insert = update
 void delete(Dictionary d, char* key);
-char* search(const Dictionary d, char* key);
+char* search(const Dictionary d, char* key); // return NULL if not find the key-value pair, else just return the value
 void status(const Dictionary d);
 void view_pairs(const Dictionary d);
 
