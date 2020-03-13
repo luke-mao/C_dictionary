@@ -13,10 +13,10 @@
 
 
 // find the hash of the key
-long hash_index(char* string, int p, long m);
+long hash_index(const char* string, int p, long m);
 
-Item* insert_item(char* key, char* value);
-void update_item(char* item_p_value, char* value);
+Item* insert_item(const char* key, const char* value);
+void update_item(char* item_p_value, const char* value);
 
 // when load factor above threshold, increase the size
 void upsize(Dictionary d);
@@ -273,7 +273,7 @@ void view_pairs(const Dictionary d){
 
 /////////////////////////////////////////////////////////////////////////////
 // find the hash of the key
-long hash_index(char* string, int p, long m){
+long hash_index(const char* string, int p, long m){
 
     int size = strlen(string);
     long value = 0;
@@ -392,7 +392,7 @@ void downsize(Dictionary d){
 
 
 // insert item function: malloc and strcpy
-Item* insert_item(char* key, char* value){
+Item* insert_item(const char* key, const char* value){
     Item* item_p;
     item_p = (Item*) malloc (1*sizeof(Item));
     
@@ -421,7 +421,7 @@ Item* insert_item(char* key, char* value){
 
 
 // update item
-void update_item(char* item_p_value, char* value){
+void update_item(char* item_p_value, const char* value){
     // need to check if the item value is null or not
     if (item_p_value == NULL){
         item_p_value = (char*)malloc(strlen(value)*sizeof(char));
