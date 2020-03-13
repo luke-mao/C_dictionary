@@ -83,7 +83,7 @@ Dictionary destroy(Dictionary d){
 
 
 // note: insert serves as an update too. 
-void insert(Dictionary d, char* key, char* value){
+void insert(Dictionary d, const char* key, const char* value){
 
     // first check if we need to upsize
     // downsize only occurs during delete, so no worry at insert stage
@@ -137,7 +137,7 @@ void insert(Dictionary d, char* key, char* value){
 
 // modify the delete function, even you delete, the key is still there
 // and the value is set to null. So that the collision chain is not broken
-void delete(Dictionary d, char* key){
+void delete(Dictionary d, const char* key){
     // if the key is not there, then do nothing
     // if the key is there, find it and then null this bucket
     long key_hash = hash_index(key, P, M);
@@ -195,7 +195,7 @@ void delete(Dictionary d, char* key){
 // need to modify the search function to suit the delete
 // when you find the key, need to check if the value is null or not
 // return null if not find, else just return the value
-char* search(const Dictionary d, char*key){
+char* search(const Dictionary d, const char*key){
 
     long key_hash = hash_index(key, P, M);
     key_hash %= d->size;
