@@ -83,7 +83,7 @@ Dictionary destroy(Dictionary d){
 
 
 // note: insert serves as an update too. 
-void insert(Dictionary d, char* key, char* value){
+void insert_to_dic(Dictionary d, char* key, char* value){
 
     // first check if we need to upsize
     // downsize only occurs during delete, so no worry at insert stage
