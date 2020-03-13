@@ -1,5 +1,5 @@
 # C_dictionary
-Use the C language to realize the Python dictionary features
+Use the C language to realize the Python dictionary features. Complete with makefile and test files.
 
 This repo uses C language to realize some basic features of the Python dictionary. Main knowledge includes hash function and collision chains. 
 
