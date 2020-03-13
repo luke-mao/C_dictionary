@@ -20,7 +20,11 @@ The makefile creates a simple test program, that extracts some english letters a
 
 Reference:
 I referenced several files to get an overall picture of how the hash table and the dictionary works. Some main websites and information are listed below.
+
 https://www.cs.yale.edu/homes/aspnes/pinewiki/C(2f)HashTables.html?highlight=%28CategoryAlgorithmNotes%29
+
 https://github.com/jamesroutley/write-a-hash-table.git 
+
 http://cseweb.ucsd.edu/~kube/cls/100/Lectures/lec16/lec16.html
+
 https://github.com/first20hours/google-10000-english.git 
