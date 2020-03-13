@@ -85,6 +85,7 @@ Dictionary destroy(Dictionary d){
 // note: insert serves as an update too. 
 void insert(Dictionary d, const char* key, const char* value){
 
+
     // first check if we need to upsize
     // downsize only occurs during delete, so no worry at insert stage
     if (((float)d->count+1) / (float)d->size > UPSIZE_THRESHOLD){
