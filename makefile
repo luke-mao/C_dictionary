@@ -1,5 +1,5 @@
-dic_test_upsize: dic_test_upsize.c dic_function.h dic_function.c
-	gcc dic_test_upsize.c dic_function.h dic_function.c -o dic_test_upsize
+dic_test: dic_test.c dic_function.h dic_function.c
+	gcc dic_test.c dic_function.h dic_function.c -o dic_test
 
 clean:
-	rm -rf dic dic_test_upsize
+	rm -rf dic_test
