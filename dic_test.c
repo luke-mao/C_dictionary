@@ -10,7 +10,7 @@ int main(void){
     status(d);
 
     FILE* fp;
-    fp = fopen("dic_test_upsize.txt", "r");
+    fp = fopen("dic_test.txt", "r");
     if (fp == NULL){
         printf("Error open file\n");
         exit(EXIT_FAILURE);
@@ -33,7 +33,7 @@ int main(void){
     /////////////////////////////////////////////////////////////
     
     printf("Command: Downsize, delete 100 keys\n\n");
-    fp = fopen("dic_test_upsize.txt", "r");
+    fp = fopen("dic_test.txt", "r");
     if (fp == NULL){
         printf("Error open file\n");
         exit(EXIT_FAILURE);
