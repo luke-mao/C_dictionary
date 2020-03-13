@@ -5,11 +5,17 @@ This repo uses C language to realize some basic features of the Python dictionar
 
 Features include 
 "create": create a dictionary with a constant start size,
+
 "destroy": destroy the dictionary (for computer memory consideration),
+
 "insert/update": insert/update key-value pairs, the two features are written in the same function,
+
 "delete": delete a key-value pairs, also you can delete a non-exisiting key, simply no work is done in the program,
+
 "search": search the value for a input key, return NULL if the key is not existing,
+
 "status": this is an extra function, to keep track of the dic size, dic item counts and the dic load factor (which is used during up and down sizing)
+
 "view_pairs": print out all key-value pairs.
 
 The functions set up an array with a start size of 30. Once the load factor increases to 70%, the dictionary undergoes upsizing, so that the size becomes 60. Once the load factor decreases to 20%, the dictionary undergoes downsizing, the size becomes max(current size / 2, 30).
